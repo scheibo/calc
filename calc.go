@@ -45,7 +45,7 @@ const (
 // Typical measurments coefficients of drag (Cd) for various cycling positions.
 const (
 	DropsCd = 0.88
-	AeroCd  = 9.70
+	AeroCd  = 0.70
 )
 
 // SeaLevelRho is the 'standard' dry, sea level air density at T0 in kg/m*3
@@ -173,15 +173,15 @@ func Yaw(va, vw, dw, db float64) float64 {
 	return math.Atan(vw*math.Sin((dw*math.Pi/180)-(db*math.Pi/180))/va) * 180 / math.Pi
 }
 
-// CalculatedDropsCdA calculates the estimated typical aerodynamic drag of a rider
+// CalculateDropsCdA calculates the estimated typical aerodynamic drag of a rider
 // in the drops with a height of h and a mass of m, assuming zero yaw.
-func CalculatedDropsCdA(h, m float64) float64 {
+func CalculateDropsCdA(h, m float64) float64 {
 	return DropsCd * DropsA(h, m)
 }
 
-// CalculatedAeroCdA calculates the estimated typical aerodynamic drag of a rider in
+// CalculateAeroCdA calculates the estimated typical aerodynamic drag of a rider in
 // the aerobars with a height of h and a mass of m, assuming zero yaw.
-func CalculatedAeroCdA(h, m float64) float64 {
+func CalculateAeroCdA(h, m float64) float64 {
 	return AeroCd * AeroA(h, m)
 }
 

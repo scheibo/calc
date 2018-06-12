@@ -31,6 +31,11 @@ func fequal(a, b float64) bool {
 	}
 }
 
+// TODO
+// https://www.cyclingpowerlab.com/PowerModels.aspx
+// http://anonymous.coward.free.fr/wattage/olh.html
+// Power, PowerTOT
+
 func TestPowerAT(t *testing.T) {
 	tests := []struct {
 		rho, cda, fw, va, vg, expected float64
@@ -153,6 +158,38 @@ func TestYaw(t *testing.T) {
 	}
 }
 
+func TestCalculateDropsCdA(t *testing.T) {
+	tests := []struct {
+		h, m, expected float64
+	}{
+		{1.75, 69, 0.3653},
+		{1.60, 53, 0.3295},
+	}
+	for _, tt := range tests {
+		actual := CalculateDropsCdA(tt.h, tt.m)
+		if !fequal(actual, tt.expected) {
+			t.Errorf("CalculateDropsCdA(%.3f, %.3f): got: %.3f, want: %.3f",
+				tt.h, tt.m, actual, tt.expected)
+		}
+	}
+}
+
+func TestCalculateAeroCdA(t *testing.T) {
+	tests := []struct {
+		h, m, expected float64
+	}{
+		{1.75, 69, 0.2284},
+		{1.60, 53, 0.1982},
+	}
+	for _, tt := range tests {
+		actual := CalculateAeroCdA(tt.h, tt.m)
+		if !fequal(actual, tt.expected) {
+			t.Errorf("CalculateAeroCdA(%.3f, %.3f): got: %.3f, want: %.3f",
+				tt.h, tt.m, actual, tt.expected)
+		}
+	}
+}
+
 func TestAirPressure(t *testing.T) {
 	tests := []struct {
 		h, t, expected float64
@@ -184,9 +221,18 @@ func TestAirDensity(t *testing.T) {
 	}
 }
 
-// TODO:
-// PowerTOT
-// AltitudeAdjust
-// CalculatedDropsCdA
-// CalculatedAeroCdA
-// Yaw
+func TestAltitudeAdjust(t *testing.T) {
+	tests := []struct {
+		p, h, expected float64
+	}{
+		{300, 0, 300},
+		{300, 2000, 270},
+	}
+	for _, tt := range tests {
+		actual := AltitudeAdjust(tt.p, tt.h)
+		if !fequal(actual, tt.expected) {
+			t.Errorf("AltitudeAdjust(%.3f, %.3f): got: %.3f, want: %.3f",
+				tt.p, tt.h, actual, tt.expected)
+		}
+	}
+}
