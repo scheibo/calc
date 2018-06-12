@@ -141,7 +141,7 @@ var PowerPE = Ppe
 // the outside radius of the tire r, the initial and final ground velocities of
 // the bicycle vgi and vgf and the initial and final times ti and tf.
 func Pke(mt, i, r, vgi, vgf, ti, tf float64) float64 {
-	return 0.5 * (mt + i/math.Pow(r, 2)) * (math.Pow(vgf, 2) - math.Pow(vgi, 2)) / (ti - tf)
+	return 0.5 * (mt + i/math.Pow(r, 2)) * (math.Pow(vgf, 2) - math.Pow(vgi, 2)) / (tf - ti)
 }
 
 // PowerKE is an alias for the Pke function.
@@ -151,17 +151,26 @@ var PowerKE = Pke
 // relative to the ground vg, the absolute wind velocity vw, the wind direction
 // dw and the direction of travel of the bicycle db, both in degrees.
 func Va(vg, vw, dw, db float64) float64 {
-	return vg + (vw * math.Cos(dw-db))
+	return vg + (vw * math.Cos((dw*math.Pi/180)-(db*math.Pi/180)))
 }
 
 // AirVelocity is an alias for the Va function.
 var AirVelocity = Va
 
+// Vg calculates the velocity of the bicycle relative to the ground over a given
+// distance d in metres and duration t.
+func Vg(d float64, t time.Duration) float64 {
+	return d / t.Seconds()
+}
+
+// GroundVelocity is an alias for the Vg function.
+var GroundVelocity = Vg
+
 // Yaw calculates the yaw angle of the bike and rider relative to the wind given
-// the absolute wind velocity  vw, the wind direction dw and the direction of
-// travel of the bicycle db, both in degrees.
-func Yaw(vw, dw, db float64) float64 {
-	return math.Atan(vw * math.Sin(dw-db))
+// the air velocity va, the absolute wind velocity vw, the wind direction dw and
+// the direction of travel of the bicycle db, both in degrees.
+func Yaw(va, vw, dw, db float64) float64 {
+	return math.Atan(vw*math.Sin((dw*math.Pi/180)-(db*math.Pi/180))/va) * 180 / math.Pi
 }
 
 // CalculatedDropsCdA calculates the estimated typical aerodynamic drag of a rider
@@ -211,15 +220,6 @@ func Rho(h, g float64) float64 {
 
 // AirDensity is an alias for the Rho function.
 var AirDensity = Rho
-
-// Vg calculates the velocity of the bicycle relative to the ground over a given
-// distance d in metres and duration t.
-func Vg(d float64, t time.Duration) float64 {
-	return d / t.Seconds()
-}
-
-// GroundVelocity is an alias for the Vg function.
-var GroundVelocity = Vg
 
 // AltitudeAdjust calculates the equivalent sustainable power at altitude h metres
 // compared to a seal level power of p based on the formula derived from Clark et al
