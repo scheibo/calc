@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -38,17 +39,22 @@ var COMPASS = map[string]float64{
 	"NNW": 337.5,
 }
 
+func exit(err error) {
+	fmt.Fprintf(os.Stderr, "%s\n", err)
+	flag.PrintDefaults()
+	os.Exit(1)
+}
+
 func verify(s string, x float64) {
 	if x < 0 {
-		// print and exit "%s must be non negative"
-		_ = s
+		exit(fmt.Errorf("%s must be non negative but was %f", s, x))
 	}
 }
 
 // TODO add support for altitude and adjust for lower power
 func main() {
 	// TODO calc.Power/calc.Time method should calculate va and take vw/dw/db instead
-	var rho, cda, crr, vg, vw, dw, db, e, gr, mt, mr, mb, r, t, d, p float64
+	var rho, cda, crr, vw, dw, db, e, gr, mt, mr, mb, r, t, d, p float64
 	var dwS, dbS string
 	var tire int64
 	var err error
@@ -62,7 +68,7 @@ func main() {
 
 	flag.Int64Var(&tire, "tire", 23, "the tire width in mm")
 
-	flag.Float64Var(&vw, "vw", 0, "the wind speed")
+	flag.Float64Var(&vw, "vw", 0, "the wind speed in m/s")
 	flag.StringVar(&dwS, "dw", "N", "the cardinal direction the wind travelling (*not* its origin)")
 	flag.StringVar(&dbS, "db", "N", "the cardinal direction the bicycle is travelling")
 
@@ -71,7 +77,7 @@ func main() {
 
 	flag.Float64Var(&d, "d", -1, "distance travelled in m")
 	flag.Float64Var(&p, "p", -1, "power in watts")
-	flag.Float64Var(&p, "t", -1, "duration in s")
+	flag.Float64Var(&t, "t", -1, "duration in s")
 
 	flag.Parse()
 
@@ -85,18 +91,18 @@ func main() {
 
 	r, err = tireRadius(tire)
 	if err != nil {
-		// print and exit
+		exit(err)
 	}
 
 	verify("vw", vw)
 	if vw > 0 {
 		dw, err = parseDirection(dwS)
 		if err != nil {
-			// print and exit
+			exit(err)
 		}
 		db, err = parseDirection(dbS)
 		if err != nil {
-			// print and exist
+			exit(err)
 		}
 	}
 
@@ -106,34 +112,57 @@ func main() {
 		gr = gr / 100
 	}
 
-	// if both are specified, make sure they agree
-	if e > 0 && gr > 0 &&
-		((d*gr != e) || (e/d != gr)) {
-		// print and exit
+	if d <= 0 {
+		exit(fmt.Errorf("d must be positive but was %f", d))
 	}
 
-	if d <= 0 {
-		// print and exit
+	if e > 0 {
+		// if both are specified, make sure they agree
+		if gr > 0 && ((d*gr != e) || (e/d != gr)) {
+			exit(fmt.Errorf("specified both e=%f and gr=%f but they do not agree", e, gr))
+		}
+		gr = e / d
 	}
 
 	if p != -1 {
 		verify("p", p)
 		if t != -1 {
-			// print and exit
+			exit(fmt.Errorf("t and p %.2f can't both be provided", p))
 		}
 		// TODO calculate time (vg, then use d to get t)
-		_ = rho * cda * crr * vg * vw * dw * db * e * gr * mt * r * d * p
+		_ = rho * cda * crr * vw * dw * db * e * gr * mt * r * d * p
 	}
 
 	if t != -1 {
 		verify("t", t)
 		if p != -1 {
-			// print and exit
+			exit(fmt.Errorf("p and t can't both be provided"))
 		}
-		vg = calc.Vg(d, time.Duration(t)*time.Second)
-		// TODO calculate power!, display components and W/kg
-		_ = rho * cda * crr * vg * vw * dw * db * e * gr * mt * r * d * t
+
+		dur := time.Duration(t) * time.Second
+		vg := calc.Vg(d, dur)
+		va := calc.Va(vg, vw, dw, db)
+
+		comp := calc.Pcomp(rho, cda, crr, va, vg, gr, mt, r, vg, vg, 0, t, calc.G, calc.Ec, calc.Fw, calc.I)
+		ptot := comp.AT + comp.RR + comp.WB + comp.PE + comp.KE
+		wkg := ptot / mr
+
+		fmt.Printf("%s (%d km @ %.2f%%) = %.2f W (%.2f W/kg) = AT:%.2f W + RR:%.2fW + WB:%.2fW + PE:%.2fW + KE:%.2fW\n",
+			fmtDuration(dur), int64(d/1000), gr*100, ptot, wkg, comp.AT, comp.RR, comp.WB, comp.PE, comp.KE)
 	}
+}
+
+func fmtDuration(d time.Duration) string {
+	d = d.Round(time.Second)
+	h := d / time.Hour
+	d -= h * time.Hour
+	m := d / time.Minute
+	d -= m * time.Minute
+	s := d / time.Second
+	if h > 0 {
+		return fmt.Sprintf("%d:%02d:%02d", h, m, s)
+	}
+	return fmt.Sprintf("%d:%02d", m, s)
 }
 
 func tireRadius(tire int64) (float64, error) {

@@ -69,27 +69,39 @@ const K = 273.15
 // L is the temperatue lapse rate in the troposphere in K/m.
 const L = 0.0065
 
-// Power is a convenience function for calculating the power required,
-// utilizing standard constants and assuming Pke is not significant.
-func Power(rho, cda, crr, va, vg, gr, mt float64) float64 {
-	return (Pat(rho, cda, Fw, va, vg) +
-		Prr(vg, gr, crr, mt, G) +
-		Pwb(vg) +
-		Ppe(vg, mt, G, gr)) / Ec
+// Components is the amount of power in watts each component of the model requires.
+type Components struct {
+	AT float64
+	RR float64
+	WB float64
+	PE float64
+	KE float64
 }
 
 // Ptot calculates the total power required, equal to the net total power
 // of Pat, Prr, Pwb, Ppe, and Pke divided by the drive chain efficiency ec.
 func Ptot(rho, cda, crr, va, vg, gr, mt, r, vgi, vgf, ti, tf, g, ec, fw, i float64) float64 {
-	return (Pat(rho, cda, fw, va, vg) +
-		Prr(vg, gr, crr, mt, g) +
-		Pwb(vg) +
-		Ppe(vg, mt, g, gr) +
-		Pke(mt, i, r, vgi, vgf, ti, tf)) / ec
+	comp := Pcomp(rho, cda, crr, va, vg, gr, mt, r, vgi, vgf, ti, tf, g, ec, fw, i)
+	return comp.AT + comp.RR + comp.WB + comp.PE + comp.KE
 }
 
 // PowerTOT is an alias for the Ptot function.
 var PowerTOT = Ptot
+
+// Pcomp calculates the total power required, broken down by the components of
+// Pat, Prr, Pwb, Ppe, and Pke, each divided by the drive chain efficiency ec.
+func Pcomp(rho, cda, crr, va, vg, gr, mt, r, vgi, vgf, ti, tf, g, ec, fw, i float64) Components {
+	return Components{
+		AT: Pat(rho, cda, fw, va, vg) / ec,
+		RR: Prr(vg, gr, crr, mt, g) / ec,
+		WB: Pwb(vg) / ec,
+		PE: Ppe(vg, mt, g, gr) / ec,
+		KE: Pke(mt, i, r, vgi, vgf, ti, tf) / ec,
+	}
+}
+
+// PowerCOMP is an alias for the Pcomp function
+var PowerCOMP = Pcomp
 
 // Pat calculates the power to overcome the force due to total aerodynamic
 // drag given the air density rho, the coefficient of drag multiplied by the
