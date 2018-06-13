@@ -14,7 +14,7 @@ const (
 	MinNormal = float64(2.2250738585072014E-308) // 1 / 2**(1022)
 )
 
-func fequal(a, b float64) bool {
+func Eqf(a, b float64) bool {
 	absA := math.Abs(a)
 	absB := math.Abs(b)
 	diff := math.Abs(a - b)
@@ -44,7 +44,7 @@ func TestPowerAT(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := PowerAT(tt.rho, tt.cda, tt.fw, tt.va, tt.vg)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("PowerAT(%.3f, %.3f, %.3f, %.3f, %.3f): got: %.3f, want: %.3f",
 				tt.rho, tt.cda, tt.fw, tt.va, tt.vg, actual, tt.expected)
 		}
@@ -59,7 +59,7 @@ func TestPowerRR(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := PowerRR(tt.vg, tt.gr, tt.crr, tt.mt, tt.g)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("PowerRR(%.3f, %.3f, %.3f, %.3f, %.3f): got: %.3f, want: %.3f",
 				tt.vg, tt.gr, tt.crr, tt.mt, tt.g, actual, tt.expected)
 		}
@@ -74,7 +74,7 @@ func TestPowerWB(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := PowerWB(tt.vg)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("PowerWB(%.3f): got: %.3f, want: %.3f",
 				tt.vg, actual, tt.expected)
 		}
@@ -89,7 +89,7 @@ func TestPowerPE(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := PowerPE(tt.vg, tt.mt, tt.g, tt.gr)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("PowerPE(%.3f, %.3f, %.3f, %.3f): got: %.3f, want: %.3f",
 				tt.vg, tt.mt, tt.g, tt.gr, actual, tt.expected)
 		}
@@ -104,7 +104,7 @@ func TestPowerKE(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := PowerKE(tt.mt, tt.i, tt.r, tt.vgi, tt.vgf, tt.ti, tt.tf)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("PowerKE(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f): got: %.3f, want: %.3f",
 				tt.mt, tt.i, tt.r, tt.vgi, tt.vgf, tt.ti, tt.tf, actual, tt.expected)
 		}
@@ -119,7 +119,7 @@ func TestAirVelocity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := AirVelocity(tt.vg, tt.vw, tt.dw, tt.db)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("AirVelocity(%.3f, %.3f, %.3f, %.3f): got: %.3f, want: %.3f",
 				tt.vg, tt.vw, tt.dw, tt.db, actual, tt.expected)
 		}
@@ -136,7 +136,7 @@ func TestGroundVelocity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := GroundVelocity(tt.d, tt.t)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("GroundVelocity(%.3f, %v): got: %.3f, want: %.3f",
 				tt.d, tt.t, actual, tt.expected)
 		}
@@ -151,7 +151,7 @@ func TestYaw(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := Yaw(tt.va, tt.vw, tt.dw, tt.db)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("Yaw(%.3f, %.3f, %.3f, %.3f): got: %.3f, want: %.3f",
 				tt.va, tt.vw, tt.dw, tt.db, actual, tt.expected)
 		}
@@ -167,7 +167,7 @@ func TestCalculateDropsCdA(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := CalculateDropsCdA(tt.h, tt.m)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("CalculateDropsCdA(%.3f, %.3f): got: %.3f, want: %.3f",
 				tt.h, tt.m, actual, tt.expected)
 		}
@@ -183,7 +183,7 @@ func TestCalculateAeroCdA(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := CalculateAeroCdA(tt.h, tt.m)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("CalculateAeroCdA(%.3f, %.3f): got: %.3f, want: %.3f",
 				tt.h, tt.m, actual, tt.expected)
 		}
@@ -198,7 +198,7 @@ func TestAirPressure(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := AirPressure(tt.h, tt.t)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("AirPressure(%.3f, %.3f): got: %.3f, want: %.3f",
 				tt.h, tt.t, actual, tt.expected)
 		}
@@ -214,7 +214,7 @@ func TestAirDensity(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := AirDensity(tt.h, tt.g)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("AirDensity(%.3f, %.3f): got: %.3f, want: %.3f",
 				tt.h, tt.g, actual, tt.expected)
 		}
@@ -230,7 +230,7 @@ func TestAltitudeAdjust(t *testing.T) {
 	}
 	for _, tt := range tests {
 		actual := AltitudeAdjust(tt.p, tt.h)
-		if !fequal(actual, tt.expected) {
+		if !Eqf(actual, tt.expected) {
 			t.Errorf("AltitudeAdjust(%.3f, %.3f): got: %.3f, want: %.3f",
 				tt.p, tt.h, actual, tt.expected)
 		}

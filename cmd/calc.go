@@ -69,7 +69,7 @@ func main() {
 	flag.Int64Var(&tire, "tire", 23, "the tire width in mm")
 
 	flag.Float64Var(&vw, "vw", 0, "the wind speed in m/s")
-	flag.StringVar(&dwS, "dw", "N", "the cardinal direction the wind travelling (*not* its origin)")
+	flag.StringVar(&dwS, "dw", "N", "the cardinal direction the wind originates from")
 	flag.StringVar(&dbS, "db", "N", "the cardinal direction the bicycle is travelling")
 
 	flag.Float64Var(&e, "e", 0, "total elevation gained in m")
@@ -147,8 +147,8 @@ func main() {
 		ptot := comp.AT + comp.RR + comp.WB + comp.PE + comp.KE
 		wkg := ptot / mr
 
-		fmt.Printf("%s (%d km @ %.2f%%) = %.2f W (%.2f W/kg) = AT:%.2f W + RR:%.2fW + WB:%.2fW + PE:%.2fW + KE:%.2fW\n",
-			fmtDuration(dur), int64(d/1000), gr*100, ptot, wkg, comp.AT, comp.RR, comp.WB, comp.PE, comp.KE)
+		fmt.Printf("%s (%.2f km @ %.2f%%) = %.2f W (%.2f W/kg) = AT:%.2f W + RR:%.2f W + WB:%.2f W + PE:%.2f W\n",
+			fmtDuration(dur), d/1000, gr*100, ptot, wkg, comp.AT, comp.RR, comp.WB, comp.PE)
 	}
 }
 
