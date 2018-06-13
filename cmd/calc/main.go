@@ -3,107 +3,151 @@ package main
 import (
 	"flag"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/scheibo/calc"
 )
 
+// RADII maps from tire width to radius
+var RADII = map[int64]float64{
+	20: calc.R700x20,
+	22: calc.R700x22,
+	23: calc.R700x23,
+	25: calc.R700x25,
+	28: calc.R700x28,
+}
+
+// COMPASS maps from cardinal direction to degrees
+var COMPASS = map[string]float64{
+	"N":   0,
+	"NNE": 22.5,
+	"NE":  45,
+	"ENE": 67.5,
+	"E":   90,
+	"ESE": 122.5,
+	"SE":  135,
+	"SSE": 157.5,
+	"S":   180,
+	"SSW": 202.5,
+	"SW":  225,
+	"WSE": 247.5,
+	"W":   270,
+	"WNW": 292.5,
+	"NW":  315,
+	"NNW": 337.5,
+}
+
+func verify(s string, x float64) {
+	if x < 0 {
+		// print and exit "%s must be non negative"
+		_ = s
+	}
+}
+
 // TODO add support for altitude and adjust for lower power
 func main() {
-	var rho, cda, crr, va, vg, gr, mt, mr, mb, r, t, p float64
-
-	va = 0
-	gr = 0
-	r = calc.R700x23
+	// TODO calc.Power/calc.Time method should calculate va and take vw/dw/db instead
+	var rho, cda, crr, vg, vw, dw, db, e, gr, mt, mr, mb, r, t, d, p float64
+	var dwS, dbS string
+	var tire int64
+	var err error
 
 	flag.Float64Var(&rho, "rho", calc.Rho0, "air density in kg/m*3")
 	flag.Float64Var(&cda, "cda", 0.325, "coefficient of drag area")
 	flag.Float64Var(&crr, "crr", calc.Crr, "coefficient of rolling resistance")
 
-	// TODO print defaults but also have multi parsing?
-	var mass, weight, mtS, mrS, mbS string
-	flag.StringVar(&mass, "mass", "", "total mass of the rider and bicycle")
-	flag.StringVar(&weight, "weight", "", "total mass of the rider and bicycle")
-	flag.StringVar(&mtS, "mt", "", "total mass of the rider and bicycle")
-	flag.StringVar(&mrS, "mr", "", "total mass of the rider")
-	flag.StringVar(&mbS, "mb", "", "total mass of the bicycle")
-	mr, mb = parseMass(mass, weight, mtS, mrS, mbS)
+	flag.Float64Var(&mr, "mr", 67.0, "total mass of the rider in kg")
+	flag.Float64Var(&mb, "mb", 8.0, "total mass of the bicycle in kg")
+
+	flag.Int64Var(&tire, "tire", 23, "the tire width in mm")
+
+	flag.Float64Var(&vw, "vw", 0, "the wind speed")
+	flag.StringVar(&dwS, "dw", "N", "the cardinal direction the wind travelling (*not* its origin)")
+	flag.StringVar(&dbS, "db", "N", "the cardinal direction the bicycle is travelling")
+
+	flag.Float64Var(&e, "e", 0, "total elevation gained in m")
+	flag.Float64Var(&gr, "gr", 0, "average grade")
+
+	flag.Float64Var(&d, "d", -1, "distance travelled in m")
+	flag.Float64Var(&p, "p", -1, "power in watts")
+	flag.Float64Var(&p, "t", -1, "duration in s")
+
+	flag.Parse()
+
+	verify("rho", rho)
+	verify("cda", cda)
+	verify("crr", crr)
+
+	verify("mr", mr)
+	verify("mb", mb)
 	mt = mr + mb
 
-	var tire, width int64
-	flag.Int64Var(&tire, "tire", 23, "the tire radius in mm")
-	flag.Int64Var(&tire, "width", 23, "the tire radius in mm")
+	r, err = tireRadius(tire)
+	if err != nil {
+		// print and exit
+	}
 
+	verify("vw", vw)
+	if vw > 0 {
+		dw, err = parseDirection(dwS)
+		if err != nil {
+			// print and exit
+		}
+		db, err = parseDirection(dbS)
+		if err != nil {
+			// print and exist
+		}
+	}
 
+	verify("gr", gr)
+	// error correct in case grade was passed in as a %
+	if gr > 1 {
+		gr = gr / 100
+	}
 
-	// NEED:
-	// (1) distance d
-	// (2a) grade gr or (2b) elevation e (can default to 0)
-	// () time t = calculate p and also display W/kg or () power p = calculate t
+	// if both are specified, make sure they agree
+	if e > 0 && gr > 0 &&
+		((d*gr != e) || (e/d != gr)) {
+		// print and exit
+	}
 
+	if d <= 0 {
+		// print and exit
+	}
 
+	if p != -1 {
+		verify("p", p)
+		if t != -1 {
+			// print and exit
+		}
+		// TODO calculate time (vg, then use d to get t)
+		_ = rho * cda * crr * vg * vw * dw * db * e * gr * mt * r * d * p
+	}
 
-	// 1) take in lb or kg
-	// 2) come up with mt
-	//var mass, weight, mt float64 // mt
-	//var mr, mb float64
-
-	//// must be 20/22/23/25/28, use to calculate r
-	//var tire, width int64
-
-	//// or calculate from d/gain, take % or 0.214
-	//var grade, gradient, gr float64
-
-	//// metres or feet, can do gr instead
-	//var elevation, e, h, gain float64
-
-	//// metres or feet
-	//var distance, d float64
-
-	//var rho, cda, crr float64 // default to specific values
-
-	//// can be duration or seconds
-	//var time, t float64
-
-	//// km/h & kph or m/s or mi/h & mph
-	//var wind, vw float64
-	//// in degrees, or as N/NW/NNW/etc
-	//var dw, db float64
-
-	//var watts, power, p float64
-
-
-
+	if t != -1 {
+		verify("t", t)
+		if p != -1 {
+			// print and exit
+		}
+		vg = calc.Vg(d, time.Duration(t)*time.Second)
+		// TODO calculate power!, display components and W/kg
+		_ = rho * cda * crr * vg * vw * dw * db * e * gr * mt * r * d * t
+	}
 }
 
-func parseMass(mass, weight, mtS, mrS, mbS string) (mr, mb float64, err error) {
-	mr = 67.0
-	mb = 8.0
-
-	return mr, mb, nil
-}
-
-var COMPASS map[string]float64{
-	"N": 0,
-	"NNE": 22.5,
-	"NE": 45,
-	"ENE": 67.5,
-	"E": 90,
-	"ESE": 122.5,
-	"SE": 135,
-	"SSE": 157.5,
-	"S": 180,
-	"SSW": 202.5,
-	"SW": 225,
-	"WSE": 247.5,
-	"W": 270,
-	"WNW": 292.5,
-	"NW": 315,
-	"NNW": 337.5,
+func tireRadius(tire int64) (float64, error) {
+	r, ok := RADII[tire]
+	if !ok {
+		return 0, fmt.Errorf("invalid tire width '%d'", tire)
+	}
+	return r, nil
 }
 
 func parseDirection(dir string) (float64, error) {
-	d, ok := COMPASS[strings.ToUpper(dir)], !ok {
-	  return nil, fmt.Errorf("invalid direction '%s'", dir)
+	d, ok := COMPASS[strings.ToUpper(dir)]
+	if !ok {
+		return 0, fmt.Errorf("invalid direction '%s'", dir)
 	}
 	return d, nil
 }
