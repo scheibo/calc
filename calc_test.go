@@ -40,7 +40,7 @@ func TestPowerAT(t *testing.T) {
 	tests := []struct {
 		rho, cda, fw, va, vg, expected float64
 	}{
-		{SeaLevelRho, 0.2565, Fw, 10.91, 8.36, 158.8},
+		{Rho0, 0.2565, Fw, 10.91, 8.36, 158.8},
 	}
 	for _, tt := range tests {
 		actual := PowerAT(tt.rho, tt.cda, tt.fw, tt.va, tt.vg)
@@ -209,7 +209,7 @@ func TestAirDensity(t *testing.T) {
 	tests := []struct {
 		h, g, expected float64
 	}{
-		{0, G, SeaLevelRho},
+		{0, G, Rho0},
 		{1000, G, 1.111},
 	}
 	for _, tt := range tests {

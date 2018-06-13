@@ -48,8 +48,8 @@ const (
 	AeroCd  = 0.70
 )
 
-// SeaLevelRho is the 'standard' dry, sea level air density at T0 in kg/m*3
-const SeaLevelRho = 1.225
+// Rho0 is the 'standard' dry, sea level air density at T0 in kg/m*3
+const Rho0 = 1.225
 
 // T0 is the sea level standard temperature in Kelvin.
 const T0 = 288.15
