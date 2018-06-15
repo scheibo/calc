@@ -140,7 +140,7 @@ func main() {
 		}
 
 		dur := time.Duration(t) * time.Second
-		vg := calc.Vg(d, dur)
+		vg := calc.Vg(d, t)
 		va := calc.Va(vg, vw, dw, db)
 
 		comp := calc.Pcomp(rho, cda, crr, va, vg, gr, mt, r, vg, vg, 0, t, calc.G, calc.Ec, calc.Fw, calc.I)

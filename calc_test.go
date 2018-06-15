@@ -3,7 +3,6 @@ package calc
 import (
 	"math"
 	"testing"
-	"time"
 )
 
 const (
@@ -128,11 +127,9 @@ func TestAirVelocity(t *testing.T) {
 
 func TestGroundVelocity(t *testing.T) {
 	tests := []struct {
-		d        float64
-		t        time.Duration
-		expected float64
+		d, t, expected float64
 	}{
-		{4800, 18 * time.Minute, 4.444},
+		{4800, 18 * 60, 4.444},
 	}
 	for _, tt := range tests {
 		actual := GroundVelocity(tt.d, tt.t)

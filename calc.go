@@ -2,7 +2,6 @@ package calc
 
 import (
 	"math"
-	"time"
 )
 
 // G is the acceleration of gravity in metres per second squared.
@@ -171,8 +170,8 @@ var AirVelocity = Va
 
 // Vg calculates the velocity of the bicycle relative to the ground over a given
 // distance d in metres and duration t.
-func Vg(d float64, t time.Duration) float64 {
-	return d / t.Seconds()
+func Vg(d, t float64) float64 {
+	return d / t
 }
 
 // GroundVelocity is an alias for the Vg function.
