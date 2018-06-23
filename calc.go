@@ -62,7 +62,7 @@ const M = 0.0289644
 // R is the universal gas constant in J/(mol*K)
 const R = 8.31432
 
-// K is the value of  Kelvin corresponding to 0 Celsius.
+// K is the value of Kelvin corresponding to 0 Celsius.
 const K = 273.15
 
 // L is the temperatue lapse rate in the troposphere in K/m.
@@ -86,6 +86,72 @@ func Ptot(rho, cda, crr, va, vg, gr, mt, r, vgi, vgf, ti, tf, g, ec, fw, i float
 
 // PowerTOT is an alias for the Ptot function.
 var PowerTOT = Ptot
+
+// Psimp calculates a simplified version of the total power required, equal to
+// the net total power of Pat, Prr, Pwb, Ppe, divided by the drive chain efficiency ec,
+// but without contributions from Pke.
+func Psimp(rho, cda, crr, va, vg, gr, mt, g, ec, fw float64) float64 {
+	// NOTE: (tf - ti) must not equal 0 so we use tf = 1
+	comp := Pcomp(rho, cda, crr, va, vg, gr, mt, 0, 0, 0, 0, 1, g, ec, fw, 0)
+	return comp.AT + comp.RR + comp.WB + comp.PE // comp.KE = 0
+}
+
+// Power is an alias for the Psimp function.
+var Power = Psimp
+
+// Vg calculates the velocity of the bicycle relative to the ground in m/s based
+// on the net total power p given rho, cda, crr, vw, dw, db, gr, mt, g, ec and fw.
+// NOTE: this method is only valid for velocities between 0 and 100 m/s.
+func Vg(p, rho, cda, crr, vw, dw, db, gr, mt, g, ec, fw float64) float64 {
+	// epsilon is some small value that determines when we will stop the search
+	const epsilon = 1e-6
+	// max is the maxmium number of iterations of the search
+	const max = 100
+
+	lvg, mvg, hvg := 0.0, 50.0, 100.0
+	for j := 0; j < max; j++ {
+		mp := Psimp(rho, cda, crr, Va(mvg, vw, dw, db), mvg, gr, mt, g, ec, fw)
+		if math.Abs(mp-p) < epsilon {
+			break
+		}
+
+		if mp > p {
+			hvg = mvg
+		} else {
+			lvg = mvg
+		}
+
+		mvg = (hvg + lvg) / 2.0
+	}
+
+	return mvg
+}
+
+// GroundVelocity is an alias for the Vg function.
+var GroundVelocity = Vg
+
+// Velocity is an alias for the Vg function.
+var Velocity = Vg
+
+// T calculates the duration in seconds of a performance over distance d in metres
+// with net total power p given rho, cda, crr, vw, dw, db, gr, mt, g, ec and fw.
+// NOTE: this method is only valid for velocities between 0 and 100 m/s.
+func T(p, d, rho, cda, crr, vw, dw, db, gr, mt, g, ec, fw float64) float64 {
+	return d / Vg(p, rho, cda, crr, vw, dw, db, gr, mt, g, ec, fw)
+}
+
+// Time is an alias for the T function.
+var Time = T
+
+// D calculates the distance in metres of a performance over duration t in seconds
+// with net total power p given rho, cda, crr, vw, dw, db, gr, mt, g, ec and fw.
+// NOTE: this method is only valid for velocities between 0 and 100 m/s.
+func D(p, t, rho, cda, crr, vw, dw, db, gr, mt, g, ec, fw float64) float64 {
+	return t * Vg(p, rho, cda, crr, vw, dw, db, gr, mt, g, ec, fw)
+}
+
+// Distance is an alias for the D function.
+var Distance = D
 
 // Pcomp calculates the total power required, broken down by the components of
 // Pat, Prr, Pwb, Ppe, and Pke, each divided by the drive chain efficiency ec.
@@ -167,15 +233,6 @@ func Va(vg, vw, dw, db float64) float64 {
 
 // AirVelocity is an alias for the Va function.
 var AirVelocity = Va
-
-// Vg calculates the velocity of the bicycle relative to the ground over a given
-// distance d in metres and duration t.
-func Vg(d, t float64) float64 {
-	return d / t
-}
-
-// GroundVelocity is an alias for the Vg function.
-var GroundVelocity = Vg
 
 // Yaw calculates the yaw angle of the bike and rider relative to the wind given
 // the air velocity va, the absolute wind velocity vw, the wind direction dw and

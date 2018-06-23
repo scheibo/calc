@@ -129,8 +129,12 @@ func main() {
 		if t != -1 {
 			exit(fmt.Errorf("t and p %.2f can't both be provided", p))
 		}
-		// TODO calculate time (vg, then use d to get t)
-		_ = rho * cda * crr * vw * dw * db * e * gr * mt * r * d * p
+
+		t := calc.T(p, d, rho, cda, crr, vw, dw, db, gr, mt, calc.G, calc.Ec, calc.Fw)
+		dur := time.Duration(t) * time.Second
+		wkg := p / mr
+
+		fmt.Printf("%.2f km @ %.2f%% @ %.2f W (%.2f W/kg) = %s\n", d/1000, gr*100, p, wkg, fmtDuration(dur))
 	}
 
 	if t != -1 {
@@ -140,7 +144,7 @@ func main() {
 		}
 
 		dur := time.Duration(t) * time.Second
-		vg := calc.Vg(d, t)
+		vg := d / t
 		va := calc.Va(vg, vw, dw, db)
 
 		comp := calc.Pcomp(rho, cda, crr, va, vg, gr, mt, r, vg, vg, 0, t, calc.G, calc.Ec, calc.Fw, calc.I)
