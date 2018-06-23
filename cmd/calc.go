@@ -53,7 +53,6 @@ func verify(s string, x float64) {
 
 // TODO add support for altitude and adjust for lower power
 func main() {
-	// TODO calc.Power/calc.Time method should calculate va and take vw/dw/db instead
 	var rho, cda, crr, vw, dw, db, e, gr, mt, mr, mb, r, t, d, p float64
 	var dwS, dbS string
 	var tire int64

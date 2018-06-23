@@ -108,23 +108,23 @@ func Vg(p, rho, cda, crr, vw, dw, db, gr, mt, g, ec, fw float64) float64 {
 	// max is the maxmium number of iterations of the search
 	const max = 100
 
-	lvg, mvg, hvg := 0.0, 50.0, 100.0
+	vgl, vgm, vgh := 0.0, 50.0, 100.0
 	for j := 0; j < max; j++ {
-		mp := Psimp(rho, cda, crr, Va(mvg, vw, dw, db), mvg, gr, mt, g, ec, fw)
-		if math.Abs(mp-p) < epsilon {
+		pm := Psimp(rho, cda, crr, Va(vgm, vw, dw, db), vgm, gr, mt, g, ec, fw)
+		if Eqf(pm, p, epsilon) {
 			break
 		}
 
-		if mp > p {
-			hvg = mvg
+		if pm > p {
+			vgh = vgm
 		} else {
-			lvg = mvg
+			vgl = vgm
 		}
 
-		mvg = (hvg + lvg) / 2.0
+		vgm = (vgh + vgl) / 2.0
 	}
 
-	return mvg
+	return vgm
 }
 
 // GroundVelocity is an alias for the Vg function.
@@ -296,4 +296,27 @@ var AirDensity = Rho
 func AltitudeAdjust(p, h float64) float64 {
 	x := h / 1000
 	return p * ((-0.0092 * math.Pow(x, 2)) - (0.0323 * x) + 1)
+}
+
+func Eqf(a, b float64, eps ...float64) bool {
+	e := 1e-3
+	if len(eps) > 0 {
+		e = eps[0]
+	}
+	// min is the smallest normal value possible
+	const min = float64(2.2250738585072014E-308) // 1 / 2**(1022)
+
+	absA := math.Abs(a)
+	absB := math.Abs(b)
+	diff := math.Abs(a - b)
+
+	if a == b {
+		return true
+	} else if a == b || b == 0 || diff < min {
+		// a or b is zero or both are extremely close to it relative error is less meaningful here
+		return diff < (e * min)
+	} else {
+		// use relative error
+		return diff/(absA+absB) < e
+	}
 }

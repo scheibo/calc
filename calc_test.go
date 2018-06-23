@@ -1,30 +1,8 @@
 package calc
 
 import (
-	"math"
 	"testing"
 )
-
-func Eqf(a, b float64) bool {
-	// e is some tiny value that determines how precisely equal we want our floats to be
-	const e float64 = 1e-3
-	// min is the smallest normal value possible
-	const min = float64(2.2250738585072014E-308) // 1 / 2**(1022)
-
-	absA := math.Abs(a)
-	absB := math.Abs(b)
-	diff := math.Abs(a - b)
-
-	if a == b {
-		return true
-	} else if a == b || b == 0 || diff < min {
-		// a or b is zero or both are extremely close to it relative error is less meaningful here
-		return diff < (e * min)
-	} else {
-		// use relative error
-		return diff/(absA+absB) < e
-	}
-}
 
 func TestPowerTOT(t *testing.T) {
 	tests := []struct {
