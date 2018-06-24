@@ -57,6 +57,7 @@ func main() {
 	var dwS, dbS string
 	var tire int64
 	var err error
+	var dur time.Duration
 
 	flag.Float64Var(&rho, "rho", calc.Rho0, "air density in kg/m*3")
 	flag.Float64Var(&cda, "cda", 0.325, "coefficient of drag area")
@@ -76,7 +77,7 @@ func main() {
 
 	flag.Float64Var(&d, "d", -1, "distance travelled in m")
 	flag.Float64Var(&p, "p", -1, "power in watts")
-	flag.Float64Var(&t, "t", -1, "duration in s")
+	flag.DurationVar(&dur, "t", -1, "duration in minutes and seconds ('12m34s')")
 
 	flag.Parse()
 
@@ -129,19 +130,17 @@ func main() {
 		}
 
 		t := calc.T(p, d, rho, cda, crr, vw, dw, db, gr, mt, calc.G, calc.Ec, calc.Fw)
-		dur := time.Duration(t) * time.Second
+		dur = time.Duration(t) * time.Second
 		wkg := p / mr
 
 		fmt.Printf("%.2f km @ %.2f%% @ %.2f W (%.2f W/kg) = %s\n", d/1000, gr*100, p, wkg, fmtDuration(dur))
-	}
-
-	if t != -1 {
-		verify("t", t)
+	} else if t != -1 {
+		verify("t", float64(dur))
+		t = float64(dur / time.Second)
 		if p != -1 {
 			exit(fmt.Errorf("p and t can't both be provided"))
 		}
 
-		dur := time.Duration(t) * time.Second
 		vg := d / t
 		va := calc.Va(vg, vw, dw, db)
 
@@ -151,6 +150,8 @@ func main() {
 
 		fmt.Printf("%s (%.2f km @ %.2f%%) = %.2f W (%.2f W/kg) = AT:%.2f W + RR:%.2f W + WB:%.2f W + PE:%.2f W\n",
 			fmtDuration(dur), d/1000, gr*100, ptot, wkg, comp.AT, comp.RR, comp.WB, comp.PE)
+	} else {
+		exit(fmt.Errorf("p or t must be specified"))
 	}
 }
 
