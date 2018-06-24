@@ -105,9 +105,8 @@ func main() {
 		}
 	}
 
-	verify("gr", gr)
 	// error correct in case grade was passed in as a %
-	if gr > 1 {
+	if gr > 1 || gr < -1 {
 		gr = gr / 100
 	}
 
