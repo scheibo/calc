@@ -125,7 +125,7 @@ func main() {
 
 	if p != -1 {
 		verify("p", p)
-		if t != -1 {
+		if dur != -1 {
 			exit(fmt.Errorf("t and p %.2f can't both be provided", p))
 		}
 
