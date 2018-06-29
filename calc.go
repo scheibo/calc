@@ -290,12 +290,11 @@ func Rho(h, g float64) float64 {
 var AirDensity = Rho
 
 // AltitudeAdjust calculates the equivalent sustainable power at altitude h metres
-// compared to a sea level power of p based on the formula derived from Clark et al
-// "The effect of acute simulated moderate altitude on power, performances and pacing
-// strategies in well-trained cyclists".
+// compared to a sea level power of p based on the formula derived from Townsend et al
+// "Prediction of Critical Power and W′ in Hypoxia: Application to Work-Balance Modelling".
 func AltitudeAdjust(p, h float64) float64 {
 	x := h / 1000
-	return p * ((-0.0092 * math.Pow(x, 2)) - (0.0323 * x) + 1)
+	return p * ((0.0016 * math.Pow(x, 3)) - (0.0157 * math.Pow(x, 2)) - (0.027 * x) + 1.0025)
 }
 
 // Eqf returns true when floats a and b are equal to within some small epsilon eps.

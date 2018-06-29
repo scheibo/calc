@@ -246,7 +246,7 @@ func TestAltitudeAdjust(t *testing.T) {
 	tests := []struct {
 		p, h, expected float64
 	}{
-		{300, 0, 300},
+		{300, 0, 301},
 		{300, 2000, 270},
 	}
 	for _, tt := range tests {
