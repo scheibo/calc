@@ -184,7 +184,9 @@ func TestCalculateDropsCdA(t *testing.T) {
 		h, m, expected float64
 	}{
 		{1.75, 69, 0.3653},
+		{1.80, 67, 0.367},
 		{1.60, 53, 0.3295},
+		{1.67, 53, 0.335},
 	}
 	for _, tt := range tests {
 		actual := CalculateDropsCdA(tt.h, tt.m)
