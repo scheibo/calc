@@ -1,3 +1,7 @@
+// Package calc implements the mathematical formulas for modelling road cycling
+// power outlined by Martin et al's 'Validation of a Mathematical Model for
+// Road Cycling Power' (https://www.ncbi.nlm.nih.gov/pubmed/28121252) and other
+// miscellaenous cycling power related formulas.
 package calc
 
 import (

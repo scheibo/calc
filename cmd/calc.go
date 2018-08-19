@@ -1,3 +1,5 @@
+// calc provides a CLI for calculating either the power required or the time
+// achievable for a given performance.
 package main
 
 import (
@@ -51,7 +53,7 @@ func verify(s string, x float64) {
 	}
 }
 
-// TODO add support for altitude and adjust for lower power
+// BUG(kjs): add support for altitude and adjust for lower power
 func main() {
 	var rho, cda, crr, vw, dw, db, e, gr, mt, mr, mb, r, t, d, p float64
 	var dwS, dbS string
@@ -129,7 +131,7 @@ func main() {
 			exit(fmt.Errorf("t and p %.2f can't both be provided", p))
 		}
 
-		t := calc.T(p, d, rho, cda, crr, vw, dw, db, gr, mt, calc.G, calc.Ec, calc.Fw)
+		t = calc.T(p, d, rho, cda, crr, vw, dw, db, gr, mt, calc.G, calc.Ec, calc.Fw)
 		dur = time.Duration(t) * time.Second
 		wkg := p / mr
 
