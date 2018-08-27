@@ -53,7 +53,6 @@ func verify(s string, x float64) {
 	}
 }
 
-// BUG(kjs): add support for altitude and adjust for lower power
 func main() {
 	var rho, cda, crr, vw, dw, db, e, gr, mt, mr, mb, r, t, d, p float64
 	var dwS, dbS string
@@ -76,6 +75,7 @@ func main() {
 
 	flag.Float64Var(&e, "e", 0, "total elevation gained in m")
 	flag.Float64Var(&gr, "gr", 0, "average grade")
+	flag.Float64Var(&h, "h", 0, "median elevation")
 
 	flag.Float64Var(&d, "d", -1, "distance travelled in m")
 	flag.Float64Var(&p, "p", -1, "power in watts")
@@ -106,6 +106,16 @@ func main() {
 		if err != nil {
 			exit(err)
 		}
+	}
+
+	verify("h", h)
+	if h != 0 {
+		r := calc.Rho(h, calc.G)
+		// if both are specified, make sure they agree
+		if rho != calc.Rho0 && r != rho {
+			exit(fmt.Errorf("specified both rho=%f and h=%f but they do not agree", rho, h))
+		}
+		rho = r
 	}
 
 	// error correct in case grade was passed in as a %
