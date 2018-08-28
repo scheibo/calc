@@ -160,8 +160,13 @@ func main() {
 		ptot := comp.AT + comp.RR + comp.WB + comp.PE + comp.KE
 		wkg := ptot / mr
 
-		fmt.Printf("%s (%.2f km @ %.2f%%) = %.2f W (%.2f W/kg) = AT:%.2f W + RR:%.2f W + WB:%.2f W + PE:%.2f W\n",
-			fmtDuration(dur), d/1000, gr*100, ptot, wkg, comp.AT, comp.RR, comp.WB, comp.PE)
+		fi, _ := os.Stdout.Stat()
+		if (fi.Mode() & os.ModeCharDevice) == 0 {
+			fmt.Println(ptot)
+		} else {
+			fmt.Printf("%s (%.2f km @ %.2f%%) = %.2f W (%.2f W/kg) = AT:%.2f W + RR:%.2f W + WB:%.2f W + PE:%.2f W\n",
+				fmtDuration(dur), d/1000, gr*100, ptot, wkg, comp.AT, comp.RR, comp.WB, comp.PE)
+		}
 	} else {
 		exit(fmt.Errorf("p or t must be specified"))
 	}
