@@ -54,7 +54,7 @@ func verify(s string, x float64) {
 }
 
 func main() {
-	var rho, cda, crr, vw, dw, db, e, gr, mt, mr, mb, r, t, d, p float64
+	var rho, cda, crr, vw, dw, db, e, gr, h, mt, mr, mb, r, t, d, p float64
 	var dwS, dbS string
 	var tire int64
 	var err error
