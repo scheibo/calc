@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -41,21 +42,33 @@ var COMPASS = map[string]float64{
 	"NNW": 337.5,
 }
 
-func exit(err error) {
-	fmt.Fprintf(os.Stderr, "%s\n", err)
-	flag.PrintDefaults()
-	os.Exit(1)
+type DirectionFlag struct {
+	Direction float64
 }
 
-func verify(s string, x float64) {
-	if x < 0 {
-		exit(fmt.Errorf("%s must be non negative but was %f", s, x))
+func (df *DirectionFlag) String() string {
+	return strconv.FormatFloat(df.Direction, 'f', -1, 64)
+}
+
+func (df *DirectionFlag) Set(v string) error {
+	d, ok := COMPASS[strings.ToUpper(v)]
+	if ok {
+		df.Direction = d
+		return nil
 	}
+
+	d, err := strconv.ParseFloat(v, 64)
+	if err == nil {
+		df.Direction = d
+		return nil
+	}
+
+	return fmt.Errorf("invalid direction '%s'", v)
 }
 
 func main() {
-	var rho, cda, crr, vw, dw, db, e, gr, h, mt, mr, mb, r, t, d, p float64
-	var dwS, dbS string
+	var rho, cda, crr, vw, e, gr, h, mt, mr, mb, r, t, d, p float64
+	var dw, db DirectionFlag
 	var tire int64
 	var err error
 	var dur time.Duration
@@ -70,8 +83,8 @@ func main() {
 	flag.Int64Var(&tire, "tire", 23, "the tire width in mm")
 
 	flag.Float64Var(&vw, "vw", 0, "the wind speed in m/s")
-	flag.StringVar(&dwS, "dw", "N", "the cardinal direction the wind originates from")
-	flag.StringVar(&dbS, "db", "N", "the cardinal direction the bicycle is travelling")
+	flag.Var(&dw, "dw", "the cardinal direction the wind originates from")
+	flag.Var(&db, "db", "the cardinal direction the bicycle is travelling")
 
 	flag.Float64Var(&e, "e", 0, "total elevation gained in m")
 	flag.Float64Var(&gr, "gr", 0, "average grade")
@@ -97,17 +110,6 @@ func main() {
 	}
 
 	verify("vw", vw)
-	if vw > 0 {
-		dw, err = parseDirection(dwS)
-		if err != nil {
-			exit(err)
-		}
-		db, err = parseDirection(dbS)
-		if err != nil {
-			exit(err)
-		}
-	}
-
 	verify("h", h)
 	if h != 0 {
 		r := calc.Rho(h, calc.G)
@@ -144,7 +146,7 @@ func main() {
 			exit(fmt.Errorf("t and p can't both be provided"))
 		}
 
-		t = calc.T(p, d, rho, cda, crr, vw, dw, db, gr, mt, calc.G, calc.Ec, calc.Fw)
+		t = calc.T(p, d, rho, cda, crr, vw, dw.Direction, db.Direction, gr, mt, calc.G, calc.Ec, calc.Fw)
 		dur = time.Duration(t) * time.Second
 		wkg := p / mr
 
@@ -161,7 +163,7 @@ func main() {
 		}
 
 		vg := d / t
-		va := calc.Va(vg, vw, dw, db)
+		va := calc.Va(vg, vw, dw.Direction, db.Direction)
 
 		comp := calc.Pcomp(rho, cda, crr, va, vg, gr, mt, r, vg, vg, 0, t, calc.G, calc.Ec, calc.Fw, calc.I)
 		ptot := comp.AT + comp.RR + comp.WB + comp.PE + comp.KE
@@ -199,10 +201,14 @@ func tireRadius(tire int64) (float64, error) {
 	return r, nil
 }
 
-func parseDirection(dir string) (float64, error) {
-	d, ok := COMPASS[strings.ToUpper(dir)]
-	if !ok {
-		return 0, fmt.Errorf("invalid direction '%s'", dir)
+func verify(s string, x float64) {
+	if x < 0 {
+		exit(fmt.Errorf("%s must be non negative but was %f", s, x))
 	}
-	return d, nil
+}
+
+func exit(err error) {
+	fmt.Fprintf(os.Stderr, "%s\n", err)
+	flag.PrintDefaults()
+	os.Exit(1)
 }
