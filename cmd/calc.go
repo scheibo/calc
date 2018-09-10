@@ -34,7 +34,7 @@ var COMPASS = map[string]float64{
 	"S":   180,
 	"SSW": 202.5,
 	"SW":  225,
-	"WSE": 247.5,
+	"WSW": 247.5,
 	"W":   270,
 	"WNW": 292.5,
 	"NW":  315,
@@ -141,7 +141,7 @@ func main() {
 	if p != -1 {
 		verify("p", p)
 		if dur != -1 {
-			exit(fmt.Errorf("t and p %.2f can't both be provided", p))
+			exit(fmt.Errorf("t and p can't both be provided"))
 		}
 
 		t = calc.T(p, d, rho, cda, crr, vw, dw, db, gr, mt, calc.G, calc.Ec, calc.Fw)
@@ -153,7 +153,7 @@ func main() {
 		} else {
 			fmt.Printf("%.2f km @ %.2f%% @ %.2f W (%.2f W/kg) = %s\n", d/1000, gr*100, p, wkg, fmtDuration(dur))
 		}
-	} else if t != -1 {
+	} else if dur != -1 {
 		verify("t", float64(dur))
 		t = float64(dur / time.Second)
 		if p != -1 {
