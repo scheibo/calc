@@ -138,7 +138,7 @@ func main() {
 	}
 
 	fi, _ := os.Stdout.Stat()
-	tty := (fi.Mode() & os.ModeCharDevice) == 0
+	pipe := (fi.Mode() & os.ModeCharDevice) == 0
 
 	if p != -1 {
 		verify("p", p)
@@ -150,7 +150,7 @@ func main() {
 		dur = time.Duration(t) * time.Second
 		wkg := p / mr
 
-		if !tty {
+		if pipe {
 			fmt.Println(dur)
 		} else {
 			fmt.Printf("%.2f km @ %.2f%% @ %.2f W (%.2f W/kg) = %s\n", d/1000, gr*100, p, wkg, fmtDuration(dur))
@@ -169,7 +169,7 @@ func main() {
 		ptot := comp.AT + comp.RR + comp.WB + comp.PE + comp.KE
 		wkg := ptot / mr
 
-		if !tty {
+		if pipe {
 			fmt.Println(ptot)
 		} else {
 			fmt.Printf("%s (%.2f km @ %.2f%%) = %.2f W (%.2f W/kg) = AT:%.2f W + RR:%.2f W + WB:%.2f W + PE:%.2f W\n",
