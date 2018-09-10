@@ -37,6 +37,7 @@ const (
 const Crr = 0.004
 
 // Typical measurements of aerodynamic drag (CdA) for various cycling positions.
+// TODO(kjs): update these measurements - TTAeroCdA seems like it should be lower.
 const (
 	TopsCdA     = 0.400
 	HoodsCdA    = 0.350 // 0.3240
